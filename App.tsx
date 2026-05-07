@@ -711,6 +711,77 @@ export default function App() {
             let { data: faqToggle } = await supabase.from('announcements').select('*').eq('id', 3).single();
             if (faqToggle) setIsFaqActive(faqToggle.is_active === true || faqToggle.is_active === 'true');
             else setIsFaqActive(true);
+
+            let { data: seo } = await supabase.from('seo_settings').select('*').eq('id', 1).single();
+            if (seo) {
+                // --- ULTRA STRONG SEO INJECTION ---
+                document.title = seo.title || "iABS Stream Hub";
+                
+                const setMeta = (name: string, content: string, isProperty = false) => {
+                    if (!content) return;
+                    const attr = isProperty ? 'property' : 'name';
+                    let meta = document.querySelector(`meta[${attr}="${name}"]`);
+                    if (!meta) {
+                        meta = document.createElement('meta');
+                        meta.setAttribute(attr, name);
+                        document.head.appendChild(meta);
+                    }
+                    meta.setAttribute('content', content);
+                };
+
+                // Standard Meta
+                setMeta('description', seo.description);
+                setMeta('keywords', seo.keywords || 'iABS, Kick, Streamer, سعودي, بث مباشر, قيمنق, ألعاب, ترفيه');
+                setMeta('author', 'iABS');
+                setMeta('robots', 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1');
+                setMeta('language', 'ar');
+
+                // Open Graph / Social Media (Facebook, Discord, WhatsApp)
+                setMeta('og:title', seo.title, true);
+                setMeta('og:description', seo.description, true);
+                setMeta('og:type', 'profile', true);
+                setMeta('og:url', window.location.href, true);
+                setMeta('og:image', PC_BACKGROUND, true);
+                setMeta('og:site_name', 'iABS Official', true);
+
+                // Twitter Cards
+                setMeta('twitter:card', 'summary_large_image', false);
+                setMeta('twitter:title', seo.title, false);
+                setMeta('twitter:description', seo.description, false);
+                setMeta('twitter:image', PC_BACKGROUND, false);
+                setMeta('twitter:site', '@iABSq', false);
+
+                // JSON-LD Structured Data (For Google Search Rich Snippets)
+                let script = document.querySelector('script[type="application/ld+json"]');
+                if (!script) {
+                    script = document.createElement('script');
+                    script.type = 'application/ld+json';
+                    document.head.appendChild(script);
+                }
+                const jsonLd = {
+                    "@context": "https://schema.org",
+                    "@type": "ProfilePage",
+                    "dateCreated": "2024-01-01T00:00:00+00:00",
+                    "mainEntity": {
+                        "@type": "Person",
+                        "name": "iABS - Mohammed Al-Qahtani",
+                        "alternateName": "iABSq",
+                        "description": seo.description,
+                        "image": PC_BACKGROUND,
+                        "url": window.location.origin,
+                        "sameAs": [
+                            "https://kick.com/iabs",
+                            "https://www.youtube.com/channel/UCdIM7MB-8G-FgE7ld3XAQ8w",
+                            "https://www.snapchat.com/@iabsq",
+                            "https://twitter.com/iABSq",
+                            "https://www.instagram.com/absq/",
+                            "https://www.tiktok.com/@iabsq"
+                        ]
+                    }
+                };
+                script.textContent = JSON.stringify(jsonLd);
+            }
+
         } catch (e) {
             console.error("Public Data Fetch Exception:", e);
         }
@@ -724,11 +795,22 @@ export default function App() {
             if (!sessionStorage.getItem('site_visited') && !isTracked) {
                 isTracked = true;
                 sessionStorage.setItem('site_visited', 'true');
-                let { data } = await supabase.from('site_stats').select('visits').eq('id', 1).single();
-                if (data) {
-                    const newVisits = data.visits + 1;
+                
+                // Track Overall Visitors
+                let { data: overall } = await supabase.from('site_stats').select('visits').eq('id', 1).single();
+                if (overall) {
+                    const newVisits = overall.visits + 1;
                     await supabase.from('site_stats').update({ visits: newVisits }).eq('id', 1);
                     setVisitorCount(newVisits);
+                }
+
+                // Track Daily Views for Chart
+                const today = new Date().toISOString().split('T')[0];
+                let { data: todayStats } = await supabase.from('daily_views').select('*').eq('view_date', today).single();
+                if (todayStats) {
+                    await supabase.from('daily_views').update({ views_count: todayStats.views_count + 1 }).eq('id', todayStats.id);
+                } else {
+                    await supabase.from('daily_views').insert([{ view_date: today, views_count: 1 }]);
                 }
             }
             fetchPublicData();
