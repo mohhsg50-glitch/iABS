@@ -195,22 +195,28 @@ const KickerCard: React.FC<KickerCardProps> = ({ title, subtitle, data, icon, ac
                   {renderRankBadge(idx + 1)}
                 </div>
 
-                <div className="flex flex-col min-w-0">
+                <div className="flex flex-col min-w-0 flex-1">
                   <span className={`
-                                         text-xs md:text-sm font-bold truncate transition-colors pr-2
-                                         ${idx === 0 ? 'text-white' : 'text-white/80'}
+                                         text-sm md:text-base font-bold truncate transition-colors pr-2
+                                         ${idx === 0 ? 'text-white drop-shadow-lg' : 'text-white/95 drop-shadow-md'}
                                          group-hover/row:text-white
+                                         leading-tight
                                      `}>
                     {entry.username}
                   </span>
                   {isTop3 && (
-                    <div className="hidden md:block h-0.5 w-8 rounded-full bg-gradient-to-r from-white/20 to-transparent mt-1"></div>
+                    <div className="hidden md:block h-0.5 w-12 rounded-full bg-gradient-to-r from-white/30 to-transparent mt-1"></div>
                   )}
                 </div>
               </div>
 
-              <div className="flex items-center gap-1.5 md:gap-2 pl-2">
-                <span className={`text-[10px] md:text-xs font-black tracking-wide ${config.text} opacity-90 group-hover/row:opacity-100 group-hover/row:scale-110 transition-all`}>
+              <div className="flex items-center gap-2 pl-3 bg-black/30 rounded-lg px-3 py-1.5 border border-white/10">
+                <span className={`
+                                         text-sm md:text-base font-black tracking-wide 
+                                         ${idx === 0 ? 'text-white drop-shadow-lg' : config.text}
+                                         group-hover/row:scale-105 transition-all
+                                         leading-none
+                                     `}>
                   {formatNumber(entry.quantity)}
                 </span>
                 {idx === 0 && (
@@ -283,7 +289,20 @@ export const KICKsSection: React.FC<KICKsSectionProps> = ({ lang }) => {
         </div>
 
         {kickerData ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-8 items-start relative px-1">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start relative px-1">
+
+            <KickerCard
+              title={t.weekly}
+              subtitle="Active"
+              data={kickerData.weekly}
+              icon={<FireIcon />}
+              accentColor="fire"
+              lang={lang}
+              t={t}
+              delay={100}
+              emptyLabel={t.noDataWeekly}
+              className="order-1"
+            />
 
             <KickerCard
               title={t.allTime}
@@ -296,20 +315,7 @@ export const KICKsSection: React.FC<KICKsSectionProps> = ({ lang }) => {
               t={t}
               delay={0}
               emptyLabel={t.noDataAllTime}
-              className="col-span-2 md:col-span-1 order-1 md:order-2"
-            />
-
-            <KickerCard
-              title={t.weekly}
-              subtitle="Active"
-              data={kickerData.weekly}
-              icon={<FireIcon />}
-              accentColor="fire"
-              lang={lang}
-              t={t}
-              delay={100}
-              emptyLabel={t.noDataWeekly}
-              className="col-span-1 md:col-span-1 order-2 md:order-1"
+              className="order-2"
             />
 
             <KickerCard
@@ -322,7 +328,7 @@ export const KICKsSection: React.FC<KICKsSectionProps> = ({ lang }) => {
               t={t}
               delay={200}
               emptyLabel={t.noDataMonthly}
-              className="col-span-1 md:col-span-1 order-3 md:order-3"
+              className="order-3"
             />
 
           </div>

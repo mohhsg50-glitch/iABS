@@ -1419,11 +1419,9 @@ export default function App() {
                 {isScheduleActive && <ScheduleSection schedule={schedule} />}
                 {isFaqActive && <FAQSection faqs={faqs} />}
 
-                <div className="mt-20 w-full max-w-6xl mx-auto">
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-                    <StatsSection lang={lang} />
-                    <KICKsSection lang={lang} />
-                  </div>
+                <div className="mt-20 w-full max-w-6xl mx-auto space-y-20">
+                  <StatsSection lang={lang} />
+                  <KICKsSection lang={lang} />
                 </div>
 
                 {/* Studio at the very bottom */}
