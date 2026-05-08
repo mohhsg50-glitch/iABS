@@ -289,55 +289,47 @@ export const KICKsSection: React.FC<KICKsSectionProps> = ({ lang }) => {
         </div>
 
         {kickerData ? (
-          <div className="space-y-6 md:space-y-0 md:grid md:grid-cols-3 md:gap-6 items-start relative px-1">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-8 items-start relative px-1">
 
-            {/* All Time - Full width on mobile, 1 column on desktop */}
-            <div className="md:col-span-1 order-1 md:order-2">
-              <KickerCard
-                title={t.allTime}
-                subtitle="Legends"
-                data={kickerData.all_time}
-                icon={<CrownIcon />}
-                accentColor="gold"
-                isMain={true}
-                lang={lang}
-                t={t}
-                delay={0}
-                emptyLabel={t.noDataAllTime}
-                className=""
-              />
-            </div>
+            <KickerCard
+              title={t.weekly}
+              subtitle="Active"
+              data={kickerData.weekly}
+              icon={<FireIcon />}
+              accentColor="fire"
+              lang={lang}
+              t={t}
+              delay={100}
+              emptyLabel={t.noDataWeekly}
+              className="col-span-1 md:col-span-1 order-2 md:order-1"
+            />
 
-            {/* Weekly and Monthly side-by-side on mobile, separate on desktop */}
-            <div className="grid grid-cols-2 gap-4 md:col-span-1 md:order-1">
-              <KickerCard
-                title={t.weekly}
-                subtitle="Active"
-                data={kickerData.weekly}
-                icon={<FireIcon />}
-                accentColor="fire"
-                lang={lang}
-                t={t}
-                delay={100}
-                emptyLabel={t.noDataWeekly}
-                className=""
-              />
-            </div>
+            <KickerCard
+              title={t.allTime}
+              subtitle="Legends"
+              data={kickerData.all_time}
+              icon={<CrownIcon />}
+              accentColor="gold"
+              isMain={true}
+              lang={lang}
+              t={t}
+              delay={0}
+              emptyLabel={t.noDataAllTime}
+              className="col-span-2 md:col-span-1 order-1 md:order-2"
+            />
 
-            <div className="grid grid-cols-2 gap-4 md:col-span-1 md:order-3">
-              <KickerCard
-                title={t.monthly}
-                subtitle="Stars"
-                data={kickerData.monthly}
-                icon={<LightningIcon />}
-                accentColor="lightning"
-                lang={lang}
-                t={t}
-                delay={200}
-                emptyLabel={t.noDataMonthly}
-                className=""
-              />
-            </div>
+            <KickerCard
+              title={t.monthly}
+              subtitle="Stars"
+              data={kickerData.monthly}
+              icon={<LightningIcon />}
+              accentColor="lightning"
+              lang={lang}
+              t={t}
+              delay={200}
+              emptyLabel={t.noDataMonthly}
+              className="col-span-1 md:col-span-1 order-3 md:order-3"
+            />
 
           </div>
         ) : (
