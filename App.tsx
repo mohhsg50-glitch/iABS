@@ -3,6 +3,7 @@ import { KickIcon, XIcon, SnapchatIcon, DiscordIcon, TikTokIcon, WhatsAppIcon, I
 import { SocialLink, Language } from './types';
 import { supabase } from './supabaseClient';
 import { AnnouncementTicker, SponsorsSection, ClipsSection, ScheduleSection, FAQSection } from './components/PublicWidgets';
+import { getCachedSocialMediaStats, formatFollowerCount } from './utils/socialMediaApi';
 import { AdminDashboard } from './components/AdminDashboard';
 import { StreamPlayer } from './components/StreamPlayer';
 import { ChatWidget } from './components/Chat';
@@ -61,7 +62,7 @@ const STATIC_SOCIALS = [
     createSocialLink('instagram', 'https://www.instagram.com/absq/', '+21K', 'صور وكواليس حصرية'),
     createSocialLink('tiktok', 'https://www.tiktok.com/@iabsq', '+20K', 'أقوى المقاطع والتحديات'),
     createSocialLink('twitter', 'https://x.com/iABSq', '+54K', 'أخبار وتحديثات سريعة'),
-    createSocialLink('whatsapp', 'https://www.whatsapp.com/channel/0029VadbqYx5Ui2eInkr7v2E', '+7K', 'تواصل مباشر وتنبيهات البث'),
+    createSocialLink('whatsapp', 'https://www.whatsapp.com/channel/0029VadbqYx5Ui2eInkr7v2E', '+9.1K', 'تواصل مباشر وتنبيهات البث'),
     createSocialLink('discord', 'https://discord.com/invite/64aggJ9yRA', '+9K', 'أكبر تجمع للأساطير'),
     createSocialLink('youtube', 'https://www.youtube.com/channel/UCdIM7MB-8G-FgE7ld3XAQ8w', '+37K', 'أرشيف البثوث ومقاطع مميزة'),
 ].filter(Boolean) as SocialLink[];
@@ -656,7 +657,7 @@ export default function App() {
         'Instagram': '+21K',
         'TikTok': '+20K',
         'X': '+54K',
-        'WhatsApp': '+7K',
+        'WhatsApp': '+9.1K',
         'Discord': '+9K',
         'YouTube': '+37K'
     });
@@ -1039,10 +1040,37 @@ export default function App() {
         }
     }, [CHANNEL_SLUG]);
 
+    // Fetch real-time social media stats
+    const fetchSocialMediaStats = async () => {
+        try {
+            const stats = await getCachedSocialMediaStats();
+            
+            if (stats.instagram) {
+                setSocialStats(prev => ({ ...prev, 'Instagram': formatFollowerCount(stats.instagram) }));
+            }
+            if (stats.tiktok) {
+                setSocialStats(prev => ({ ...prev, 'TikTok': formatFollowerCount(stats.tiktok) }));
+            }
+            if (stats.twitter) {
+                setSocialStats(prev => ({ ...prev, 'X': formatFollowerCount(stats.twitter) }));
+            }
+            if (stats.whatsapp) {
+                setSocialStats(prev => ({ ...prev, 'WhatsApp': formatFollowerCount(stats.whatsapp) }));
+            }
+        } catch (error) {
+            console.error('Error fetching social media stats:', error);
+        }
+    };
+
     useEffect(() => {
         fetchKickStatus();
-        const interval = setInterval(fetchKickStatus, 60000); // تحديث كل دقيقة وليس 30 ثانية لتخفيف الضغط
-        return () => clearInterval(interval);
+        fetchSocialMediaStats(); // Initial fetch
+        const kickInterval = setInterval(fetchKickStatus, 60000); // تحديث كل دقيقة وليس 30 ثانية لتخفيف الضغط
+        const socialInterval = setInterval(fetchSocialMediaStats, 5 * 60 * 1000); // Update social stats every 5 minutes
+        return () => {
+            clearInterval(kickInterval);
+            clearInterval(socialInterval);
+        };
     }, [fetchKickStatus]);
 
     const handleShare = async () => {
