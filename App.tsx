@@ -7,6 +7,7 @@ import { AdminDashboard } from './components/AdminDashboard';
 import { StreamPlayer } from './components/StreamPlayer';
 import { ChatWidget } from './components/Chat';
 import { StatsSection } from './components/StatsSection';
+import { KICKsSection } from './components/KICKsSection';
 import { DiscordWidget, YoutubeWidget } from './components/CommunityWidgets';
 import { StudioSection } from './components/StudioSection';
 
@@ -1418,7 +1419,12 @@ export default function App() {
                 {isScheduleActive && <ScheduleSection schedule={schedule} />}
                 {isFaqActive && <FAQSection faqs={faqs} />}
 
-                <div className="mt-20 w-full max-w-6xl mx-auto"><StatsSection lang={lang} /></div>
+                <div className="mt-20 w-full max-w-6xl mx-auto">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                    <StatsSection lang={lang} />
+                    <KICKsSection lang={lang} />
+                  </div>
+                </div>
 
                 {/* Studio at the very bottom */}
                 <StudioSection />
