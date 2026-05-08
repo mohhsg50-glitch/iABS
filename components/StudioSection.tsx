@@ -263,13 +263,13 @@ const VideoEmbed: React.FC<{
 
       {/* Video Container */}
       <div 
-        className="relative w-full bg-black"
+        className="relative w-full bg-black rounded-xl overflow-hidden"
         style={{ aspectRatio }}
       >
         {source === 'youtube_shorts' && embedUrl && (
           <iframe
             src={embedUrl}
-            className="w-full h-full rounded-2xl"
+            className="w-full h-full"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
             title={title}
@@ -282,7 +282,7 @@ const VideoEmbed: React.FC<{
         {source === 'tiktok' && embedUrl && (
           <iframe
             src={embedUrl}
-            className="w-full h-full rounded-2xl"
+            className="w-full h-full"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
             title={title}
@@ -295,7 +295,7 @@ const VideoEmbed: React.FC<{
         {source === 'instagram' && embedUrl && (
           <iframe
             src={embedUrl}
-            className="w-full h-full rounded-2xl"
+            className="w-full h-full"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
             title={title}
@@ -310,7 +310,7 @@ const VideoEmbed: React.FC<{
         {source === 'x' && embedUrl && (
           <iframe
             src={embedUrl}
-            className="w-full h-full rounded-2xl"
+            className="w-full h-full"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
             title={title}
@@ -325,10 +325,12 @@ const VideoEmbed: React.FC<{
             src={url}
             controls
             playsInline
-            className="w-full h-full rounded-2xl object-cover"
+            className="w-full h-full object-contain"
             onLoadStart={() => setIsLoading(true)}
             onLoadedData={() => setIsLoading(false)}
             onError={() => { setIsLoading(false); setHasError(true); }}
+            muted
+            autoPlay={false}
           />
         )}
       </div>
