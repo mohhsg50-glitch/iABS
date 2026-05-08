@@ -8,6 +8,7 @@ import { StreamPlayer } from './components/StreamPlayer';
 import { ChatWidget } from './components/Chat';
 import { StatsSection } from './components/StatsSection';
 import { DiscordWidget, YoutubeWidget } from './components/CommunityWidgets';
+import { StudioSection } from './components/StudioSection';
 
 // --- Constants ---
 const DEFAULT_PROFILE_IMAGE = "/favicon.png";
@@ -665,8 +666,12 @@ export default function App() {
 
     // Admin & Poll States
     const [showAdminLogin, setShowAdminLogin] = useState(false);
+    const [adminEmail, setAdminEmail] = useState('');
     const [adminPassword, setAdminPassword] = useState('');
+    const [adminBusy, setAdminBusy] = useState(false);
+    const [adminSessionUserId, setAdminSessionUserId] = useState<string | null>(null);
     const [isAdmin, setIsAdmin] = useState(false);
+    const [showAdminDashboard, setShowAdminDashboard] = useState(false);
     const [visitorCount, setVisitorCount] = useState(0);
     const [activePoll, setActivePoll] = useState<any>(null);
     const [pollQuestion, setPollQuestion] = useState('');
@@ -817,6 +822,22 @@ export default function App() {
         };
         initData();
 
+        const initAdmin = async () => {
+            try {
+                const { data } = await supabase.auth.getSession();
+                const userId = data.session?.user?.id ?? null;
+                setAdminSessionUserId(userId);
+            } catch {
+                setAdminSessionUserId(null);
+            }
+        };
+
+        initAdmin();
+        const { data: authSub } = supabase.auth.onAuthStateChange((_event, session) => {
+            const userId = session?.user?.id ?? null;
+            setAdminSessionUserId(userId);
+        });
+
         const fetchLive = async () => {
             let { data: statData } = await supabase.from('site_stats').select('visits').eq('id', 1).single();
             if (statData) setVisitorCount(statData.visits);
@@ -837,8 +858,36 @@ export default function App() {
 
         fetchLive();
         const interval = setInterval(fetchLive, 3000); // تحديث لايف كل 3 ثواني (أون لاين)
-        return () => clearInterval(interval);
+        return () => {
+            clearInterval(interval);
+            authSub?.subscription?.unsubscribe();
+        };
     }, []);
+
+    const refreshIsAdmin = async (userId: string | null) => {
+        if (!userId) {
+            setIsAdmin(false);
+            setShowAdminDashboard(false);
+            return;
+        }
+        const { data, error } = await supabase
+            .from('admin_users')
+            .select('user_id,is_active,role')
+            .eq('user_id', userId)
+            .eq('is_active', true)
+            .maybeSingle();
+        if (error) {
+            console.warn('admin_users check failed', error.message);
+            setIsAdmin(false);
+            return;
+        }
+        setIsAdmin(!!data);
+        if (!data) setShowAdminDashboard(false);
+    };
+
+    useEffect(() => {
+        refreshIsAdmin(adminSessionUserId);
+    }, [adminSessionUserId]);
 
     const handleVote = async (optionId: number) => {
         if (!activePoll || localStorage.getItem(`voted_${activePoll.id}`)) return;
@@ -851,23 +900,57 @@ export default function App() {
     };
 
     const handleAdminLogin = async () => {
+        if (!adminEmail || !adminPassword) {
+            alert(lang === 'en' ? 'Enter email and password' : 'اكتب الإيميل وكلمة المرور');
+            return;
+        }
+        setAdminBusy(true);
         try {
-            const { data, error } = await supabase.from('admin_auth').select('password').eq('id', 1).single();
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email: adminEmail,
+                password: adminPassword
+            });
             if (error) {
-                console.error("Supabase Error:", error);
-                alert("خطأ في الاتصال بقاعدة البيانات: " + error.message);
+                alert((lang === 'en' ? 'Login failed: ' : 'فشل تسجيل الدخول: ') + error.message);
                 return;
             }
-            if (data && data.password === adminPassword) {
-                setIsAdmin(true);
-                setShowAdminLogin(false);
-                setAdminPassword('');
-            } else {
-                alert(lang === 'en' ? 'Incorrect Password' : 'كلمة السر خاطئة');
+
+            const userId = data.user?.id ?? null;
+            setAdminSessionUserId(userId);
+            await refreshIsAdmin(userId);
+
+            // Only close if user is actually admin
+            if (userId) {
+                const { data: adminRow } = await supabase
+                    .from('admin_users')
+                    .select('user_id')
+                    .eq('user_id', userId)
+                    .eq('is_active', true)
+                    .maybeSingle();
+                if (adminRow) {
+                    setShowAdminLogin(false);
+                    setAdminPassword('');
+                    setShowAdminDashboard(true);
+                } else {
+                    alert(lang === 'en' ? 'This account is not an admin.' : 'هذا الحساب ليس أدمن.');
+                }
             }
         } catch (err: any) {
-            console.error("Catch Error:", err);
-            alert("حدث خطأ غير متوقع: " + err.message);
+            alert((lang === 'en' ? 'Unexpected error: ' : 'خطأ غير متوقع: ') + (err?.message || ''));
+        } finally {
+            setAdminBusy(false);
+        }
+    };
+
+    const handleAdminLogout = async () => {
+        setAdminBusy(true);
+        try {
+            await supabase.auth.signOut();
+        } finally {
+            setAdminBusy(false);
+            setIsAdmin(false);
+            setAdminSessionUserId(null);
+            setShowAdminDashboard(false);
         }
     };
 
@@ -984,9 +1067,22 @@ export default function App() {
 
     return (
         <div className={`relative min-h-screen w-full selection:bg-[#FF2D2D] selection:text-black overflow-x-hidden ${isRTL ? 'font-arabic' : 'font-sans'}`} dir={isRTL ? 'rtl' : 'ltr'}>
+            {/* Standalone Admin Page */}
+            {isAdmin && showAdminDashboard && (
+                <AdminDashboard
+                    supabase={supabase}
+                    visitorCount={visitorCount}
+                    activePoll={activePoll}
+                    setActivePoll={setActivePoll}
+                    onLogout={handleAdminLogout}
+                    onBack={() => setShowAdminDashboard(false)}
+                    fetchLive={fetchPublicData}
+                />
+            )}
 
-
-
+            {/* Hide site when admin page is open */}
+            {isAdmin && showAdminDashboard ? null : (
+            <>
             <div className="fixed inset-0 z-0 bg-[#050505]">
                 <div className="absolute inset-0 responsive_bg transition-all duration-1000 ease-in-out scale-105" />
                 <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/60 to-black/95"></div>
@@ -1323,6 +1419,9 @@ export default function App() {
                 {isFaqActive && <FAQSection faqs={faqs} />}
 
                 <div className="mt-20 w-full max-w-6xl mx-auto"><StatsSection lang={lang} /></div>
+
+                {/* Studio at the very bottom */}
+                <StudioSection />
                 <footer className="mt-24 py-10 border-t border-white/5 flex flex-col items-center justify-center gap-6">
                     {/* Email Section - Subtle */}
                     {EMAIL_ADDRESS && (
@@ -1338,7 +1437,14 @@ export default function App() {
                         <div className="flex items-center gap-2"><span className="text-xs font-bold tracking-[0.3em] text-white">{t.poweredBy}</span></div>
                         <p className="text-[10px] text-white/60">{t.footer}</p>
                         
-                        <button onClick={() => setShowAdminLogin(true)} className="mt-4 p-2 rounded-full hover:bg-white/10 transition-colors" title="Admin">
+                        <button
+                            onClick={() => {
+                                if (isAdmin) setShowAdminDashboard(true);
+                                else setShowAdminLogin(true);
+                            }}
+                            className="mt-4 p-2 rounded-full hover:bg-white/10 transition-colors"
+                            title="Admin"
+                        >
                             <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
                         </button>
                     </div>
@@ -1355,6 +1461,14 @@ export default function App() {
                             </div>
                         </div>
                         <h2 className="text-xl font-black text-white mb-6 text-center">{lang === 'en' ? 'Admin Login' : 'تسجيل دخول الإدارة'}</h2>
+                        <input
+                            type="email"
+                            className="w-full bg-black border border-white/10 rounded-2xl p-4 text-white mb-3 text-center font-bold focus:border-[#FF2D2D]/50 outline-none transition-colors"
+                            placeholder={lang === 'en' ? 'Email' : 'الإيميل'}
+                            value={adminEmail}
+                            onChange={e => setAdminEmail(e.target.value)}
+                            autoComplete="email"
+                        />
                         <input 
                             type="password" 
                             className="w-full bg-black border border-white/10 rounded-2xl p-4 text-white mb-6 text-center font-bold focus:border-[#FF2D2D]/50 outline-none transition-colors" 
@@ -1366,22 +1480,20 @@ export default function App() {
                         />
                         <div className="flex gap-3">
                             <button onClick={() => setShowAdminLogin(false)} className="flex-1 bg-white/5 hover:bg-white/10 text-white font-bold py-3 rounded-2xl transition-colors">{lang === 'en' ? 'Cancel' : 'إلغاء'}</button>
-                            <button onClick={handleAdminLogin} className="flex-1 bg-gradient-to-r from-[#FF2D2D] to-[#ff6b6b] hover:from-[#ff4040] hover:to-[#ff8080] text-black font-black py-3 rounded-2xl transition-all shadow-[0_0_20px_rgba(255,45,45,0.4)]">{lang === 'en' ? 'Login' : 'دخول'}</button>
+                            <button
+                                disabled={adminBusy}
+                                onClick={handleAdminLogin}
+                                className={`flex-1 bg-gradient-to-r from-[#FF2D2D] to-[#ff6b6b] hover:from-[#ff4040] hover:to-[#ff8080] text-black font-black py-3 rounded-2xl transition-all shadow-[0_0_20px_rgba(255,45,45,0.4)] ${adminBusy ? 'opacity-60 cursor-not-allowed' : ''}`}
+                            >
+                                {adminBusy ? (lang === 'en' ? 'Signing in…' : 'جاري الدخول…') : (lang === 'en' ? 'Login' : 'دخول')}
+                            </button>
                         </div>
                     </div>
                 </div>
             )}
 
-            {/* Admin Dashboard Modal */}
-            {isAdmin && (
-                <AdminDashboard 
-                    supabase={supabase} 
-                    visitorCount={visitorCount} 
-                    activePoll={activePoll} 
-                    setActivePoll={setActivePoll} 
-                    setIsAdmin={setIsAdmin} 
-                    fetchLive={fetchPublicData} 
-                />
+            {/* close site wrapper when not in admin page */}
+            </>
             )}
         </div>
     );
