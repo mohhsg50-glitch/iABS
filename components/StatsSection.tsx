@@ -417,7 +417,7 @@ export const StatsSection: React.FC<StatsSectionProps> = ({ lang }) => {
                 className="col-span-2 md:col-span-1 order-1 md:order-2"
               />
 
-              {/* Weekly (Left on Desktop, Bottom Left on Mobile) - Rose Theme */}
+              {/* Weekly (Left on Desktop, Side-by-side on Mobile) - Rose Theme */}
               <LeaderboardCard
                 title={t.weekly}
                 subtitle="Active"
@@ -431,7 +431,7 @@ export const StatsSection: React.FC<StatsSectionProps> = ({ lang }) => {
                 className="col-span-1 md:col-span-1 order-2 md:order-1"
               />
 
-              {/* Monthly (Right on Desktop, Bottom Right on Mobile) - Cyan/Blue Theme */}
+              {/* Monthly (Right on Desktop, Side-by-side on Mobile) - Cyan/Blue Theme */}
               <LeaderboardCard
                 title={t.monthly}
                 subtitle="Stars"

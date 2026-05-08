@@ -63,7 +63,7 @@ export const DiscordWidget: React.FC<CommunityWidgetsProps> = ({ lang }) => {
    const squadAvatars = data.members.slice(0, 12);
 
    return (
-    <div className="group relative flex flex-col h-auto min-h-[380px] md:min-h-[500px] w-full bg-[#0a0b14] border-[6px] md:border-[10px] border-[#5865F2]/20 rounded-[32px] md:rounded-[56px] overflow-hidden transition-all duration-700 hover:border-[#5865F2]/40 hover:shadow-[0_0_100px_rgba(88,101,242,0.15)] hover:-translate-y-2 pb-4 md:pb-10">
+    <div className="group relative flex flex-col h-auto min-h-[350px] sm:min-h-[380px] md:min-h-[500px] w-full bg-[#0a0b14] border-[4px] sm:border-[6px] md:border-[10px] border-[#5865F2]/20 rounded-[24px] sm:rounded-[32px] md:rounded-[56px] overflow-hidden transition-all duration-700 hover:border-[#5865F2]/40 hover:shadow-[0_0_100px_rgba(88,101,242,0.15)] hover:-translate-y-2 pb-3 sm:pb-4 md:pb-10">
          {/* BACKGROUND LINK */}
          <a
             href={data.instant_invite}
@@ -239,7 +239,7 @@ export const YoutubeWidget: React.FC<CommunityWidgetsProps> = ({ lang }) => {
    const isRTL = lang === 'ar';
 
    return (
-    <div className="group relative flex flex-col h-auto min-h-[380px] md:min-h-[500px] w-full bg-[#050000] border-[6px] md:border-[10px] border-[#FF0000]/20 rounded-[32px] md:rounded-[56px] overflow-hidden transition-all duration-700 hover:border-[#FF0000]/40 hover:shadow-[0_0_100px_rgba(255,0,0,0.15)] hover:-translate-y-2 pb-4 md:pb-10">
+    <div className="group relative flex flex-col h-auto min-h-[350px] sm:min-h-[380px] md:min-h-[500px] w-full bg-[#050000] border-[4px] sm:border-[6px] md:border-[10px] border-[#FF0000]/20 rounded-[24px] sm:rounded-[32px] md:rounded-[56px] overflow-hidden transition-all duration-700 hover:border-[#FF0000]/40 hover:shadow-[0_0_100px_rgba(255,0,0,0.15)] hover:-translate-y-2 pb-3 sm:pb-4 md:pb-10">
          {/* BACKGROUND LINK */}
          <a
             href={channelUrl}
