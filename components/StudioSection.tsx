@@ -790,7 +790,7 @@ export const StudioSection: React.FC = () => {
               <div className="text-white/60 font-bold py-10 text-center">لا يوجد محتوى منشور بعد.</div>
             ) : (
               <>
-                <div className="gap-4 [column-gap:16px] columns-1 sm:columns-2 lg:columns-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {displayedItems.map((it) => {
                     const likes = likesAgg.get(it.id) || 0;
                     const liked = hasLiked(it.id);
@@ -799,7 +799,7 @@ export const StudioSection: React.FC = () => {
                     return (
                       <div
                         key={it.id}
-                        className="mb-4 break-inside-avoid rounded-[34px] border-2 border-white/10 bg-black/35 overflow-hidden shadow-[0_18px_55px_rgba(0,0,0,0.65)] hover:border-white/20 transition duration-300 group"
+                        className="mb-4 break-inside-avoid rounded-[24px] sm:rounded-[34px] border-2 border-white/10 bg-black/35 overflow-hidden shadow-[0_18px_55px_rgba(0,0,0,0.65)] hover:border-white/20 transition duration-300 group"
                       >
                         {/* Subtle shine */}
                         <div className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-700">
@@ -835,7 +835,7 @@ export const StudioSection: React.FC = () => {
                           )}
 
                           {it.media_type === 'video' && (
-                            <div className="w-full">
+                            <div className="w-full aspect-video">
                               <VideoEmbed
                                 url={it.media_url}
                                 source={it.source}
