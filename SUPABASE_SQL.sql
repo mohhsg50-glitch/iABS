@@ -47,6 +47,13 @@ to authenticated
 using (public.is_admin())
 with check (public.is_admin());
 
+-- Allow authenticated users to insert themselves as admin (for first admin setup)
+drop policy if exists "admin_users_insert_self" on public.admin_users;
+create policy "admin_users_insert_self"
+on public.admin_users for insert
+to authenticated
+with check (user_id = auth.uid());
+
 -- =========================
 -- 2) Public content tables used by the app
 -- =========================

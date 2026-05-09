@@ -933,7 +933,29 @@ export default function App() {
                     setAdminPassword('');
                     setShowAdminDashboard(true);
                 } else {
-                    alert(lang === 'en' ? 'This account is not an admin.' : 'هذا الحساب ليس أدمن.');
+                    // Auto-add user as admin if not exists (for first admin setup)
+                    const email = data.user?.email || adminEmail;
+                    const username = email.split('@')[0];
+                    const { error: insertError } = await supabase
+                        .from('admin_users')
+                        .insert([{
+                            user_id: userId,
+                            username: username,
+                            email: email,
+                            password_hash: '', // Empty since using Supabase Auth
+                            full_name: username,
+                            role: 'admin',
+                            is_active: true
+                        }]);
+                    if (insertError) {
+                        alert((lang === 'en' ? 'This account is not an admin: ' : 'هذا الحساب ليس أدمن: ') + insertError.message);
+                    } else {
+                        await refreshIsAdmin(userId);
+                        setShowAdminLogin(false);
+                        setAdminPassword('');
+                        setShowAdminDashboard(true);
+                        alert(lang === 'en' ? 'Added as admin successfully!' : 'تمت الإضافة كمسؤول بنجاح!');
+                    }
                 }
             }
         } catch (err: any) {
