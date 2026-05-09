@@ -3,7 +3,6 @@ import { KickIcon, XIcon, SnapchatIcon, DiscordIcon, TikTokIcon, WhatsAppIcon, I
 import { SocialLink, Language } from './types';
 import { supabase } from './supabaseClient';
 import { AnnouncementTicker, SponsorsSection, ClipsSection, ScheduleSection, FAQSection } from './components/PublicWidgets';
-import { getCachedSocialMediaStats, formatFollowerCount } from './utils/socialMediaApi';
 import { AdminDashboard } from './components/AdminDashboard';
 import { StreamPlayer } from './components/StreamPlayer';
 import { ChatWidget } from './components/Chat';
@@ -652,12 +651,12 @@ export default function App() {
     });
 
     const [socialStats, setSocialStats] = useState<Record<string, string>>({
-        'KICK': '+110K',
+        'KICK': '121.1K',
         'Snapchat': '1.2M+',
-        'Instagram': '+21K',
-        'TikTok': '+20K',
-        'X': '+54K',
-        'WhatsApp': '+9.1K',
+        'Instagram': '21.3K',
+        'TikTok': '42.3K',
+        'X': '57.2K',
+        'WhatsApp': '9.1K+',
         'Discord': '+9K',
         'YouTube': '+37K'
     });
@@ -1040,36 +1039,11 @@ export default function App() {
         }
     }, [CHANNEL_SLUG]);
 
-    // Fetch real-time social media stats
-    const fetchSocialMediaStats = async () => {
-        try {
-            const stats = await getCachedSocialMediaStats();
-            
-            if (stats.instagram) {
-                setSocialStats(prev => ({ ...prev, 'Instagram': formatFollowerCount(stats.instagram) }));
-            }
-            if (stats.tiktok) {
-                setSocialStats(prev => ({ ...prev, 'TikTok': formatFollowerCount(stats.tiktok) }));
-            }
-            if (stats.twitter) {
-                setSocialStats(prev => ({ ...prev, 'X': formatFollowerCount(stats.twitter) }));
-            }
-            if (stats.whatsapp) {
-                setSocialStats(prev => ({ ...prev, 'WhatsApp': formatFollowerCount(stats.whatsapp) }));
-            }
-        } catch (error) {
-            console.error('Error fetching social media stats:', error);
-        }
-    };
-
     useEffect(() => {
         fetchKickStatus();
-        fetchSocialMediaStats(); // Initial fetch
         const kickInterval = setInterval(fetchKickStatus, 60000); // تحديث كل دقيقة وليس 30 ثانية لتخفيف الضغط
-        const socialInterval = setInterval(fetchSocialMediaStats, 5 * 60 * 1000); // Update social stats every 5 minutes
         return () => {
             clearInterval(kickInterval);
-            clearInterval(socialInterval);
         };
     }, [fetchKickStatus]);
 
