@@ -15,54 +15,76 @@
     <div id="root"></div>
     
     <script type="text/babel">
-        let platforms = [];
+        // Static social media data - no database dependency
+        let platforms = [
+            {
+                platform_key: 'kick',
+                platform_name: 'KICK',
+                follower_count: 121100,
+                color_hex: '#53FC18',
+                profile_url: 'https://kick.com/iabs',
+                last_updated: new Date().toISOString()
+            },
+            {
+                platform_key: 'snapchat',
+                platform_name: 'Snapchat',
+                follower_count: 1200000,
+                color_hex: '#FFFC00',
+                profile_url: 'https://www.snapchat.com/@iabsq',
+                last_updated: new Date().toISOString()
+            },
+            {
+                platform_key: 'instagram',
+                platform_name: 'Instagram',
+                follower_count: 21300,
+                color_hex: '#E1306C',
+                profile_url: 'https://www.instagram.com/absq/',
+                last_updated: new Date().toISOString()
+            },
+            {
+                platform_key: 'tiktok',
+                platform_name: 'TikTok',
+                follower_count: 42300,
+                color_hex: '#FE2C55',
+                profile_url: 'https://www.tiktok.com/@iabsq',
+                last_updated: new Date().toISOString()
+            },
+            {
+                platform_key: 'x',
+                platform_name: 'X',
+                follower_count: 57200,
+                color_hex: '#000000',
+                profile_url: 'https://x.com/iABSq',
+                last_updated: new Date().toISOString()
+            },
+            {
+                platform_key: 'whatsapp',
+                platform_name: 'WhatsApp',
+                follower_count: 9100,
+                color_hex: '#25D366',
+                profile_url: 'https://www.whatsapp.com/channel/0029VadbqYx5Ui2eInkr7v2E',
+                last_updated: new Date().toISOString()
+            },
+            {
+                platform_key: 'discord',
+                platform_name: 'Discord',
+                follower_count: 9000,
+                color_hex: '#5865F2',
+                profile_url: 'https://discord.com/invite/64aggJ9yRA',
+                last_updated: new Date().toISOString()
+            },
+            {
+                platform_key: 'youtube',
+                platform_name: 'YouTube',
+                follower_count: 37000,
+                color_hex: '#FF0000',
+                profile_url: 'https://www.youtube.com/channel/UCdIM7MB-8G-FgE7ld3XAQ8w',
+                last_updated: new Date().toISOString()
+            }
+        ];
+        
         let history = [];
         let currentSection = 'social-media';
-        
-        // Fetch social media data
-        async function fetchSocialData() {
-            try {
-                const response = await fetch('/api/admin/social-stats.php');
-                const data = await response.json();
-                platforms = data.platforms || [];
-                history = data.history || [];
-                render();
-            } catch (error) {
-                console.error('Failed to fetch social data:', error);
-            }
-        }
-        
-        // Update follower count
-        async function updateFollowerCount(platformKey, newCount) {
-            const count = parseInt(newCount);
-            if (isNaN(count) || count < 0) {
-                alert('الرجاء إدخال رقم صحيح');
-                return;
-            }
-            
-            try {
-                const response = await fetch('/api/admin/social-stats.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        platform_key: platformKey,
-                        follower_count: count,
-                        update_source: 'manual',
-                        notes: 'تم التحديث يدوياً من لوحة التحكم'
-                    })
-                });
-                
-                const data = await response.json();
-                if (data.success) {
-                    await fetchSocialData();
-                    alert('تم تحديث العدد بنجاح');
-                } else {
-                    alert('فشل تحديث العدد: ' + (data.error || 'Unknown error'));
-                }
-            } catch (error) {
-                alert('حدث خطأ أثناء التحديث');
-            }
-        }
         
         // Get icon HTML
         function getIcon(platformKey) {
@@ -181,14 +203,27 @@
             document.getElementById(`edit-${platformKey}`).style.display = 'none';
         }
         
-        // Save update
+        // Save update - now just updates the static data
         function saveUpdate(platformKey) {
-            const newCount = document.getElementById(`input-${platformKey}`).value;
-            updateFollowerCount(platformKey, newCount);
+            const newCount = parseInt(document.getElementById(`input-${platformKey}`).value);
+            if (isNaN(newCount) || newCount < 0) {
+                alert('الرجاء إدخال رقم صحيح');
+                return;
+            }
+            
+            // Update the static data
+            const platform = platforms.find(p => p.platform_key === platformKey);
+            if (platform) {
+                platform.follower_count = newCount;
+                platform.last_updated = new Date().toISOString();
+                alert('تم تحديث العدد بنجاح');
+                cancelEdit(platformKey);
+                render();
+            }
         }
         
-        // Initialize
-        fetchSocialData();
+        // Initialize - render static data immediately
+        render();
     </script>
 </body>
 </html>
