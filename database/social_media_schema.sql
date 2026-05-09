@@ -82,7 +82,7 @@ INSERT INTO social_media_stats (platform_id, follower_count, updated_by) VALUES
 ((SELECT id FROM social_platforms WHERE platform_key = 'snapchat'), 1200000, 'admin'),
 ((SELECT id FROM social_platforms WHERE platform_key = 'discord'), 9000, 'admin'),
 ((SELECT id FROM social_platforms WHERE platform_key = 'youtube'), 37000, 'admin'),
-((SELECT id FROM social_platforms WHERE platform_key = 'kick'), 110000, 'admin')
+((SELECT id FROM social_platforms WHERE platform_key = 'kick'), 121100, 'admin')
 ON CONFLICT (platform_id) DO UPDATE SET follower_count = EXCLUDED.follower_count;
 
 -- Create default admin user (password: admin123) - PostgreSQL syntax
