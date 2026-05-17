@@ -42,7 +42,8 @@ const SYSTEM_PROMPT = `أنت مساعد iABS الرسمي، تتحدث بالل
   • **كلمة** للنص العريض (مهم)
   • *كلمة* للنص المائل
   • ***كلمة*** للعريض والمائل معاً
-- وزع التنسيق على ردودك عشان تكون جميلة وواضحة`.trim();
+- وزع التنسيق على ردودك عشان تكون جميلة وواضحة
+- عندما تكتب كلمات إنجليزية مع العربية، اترك مسافة قبل وبعد الكلمة الإنجليزية (مثل: حسابه على **Kick** عنده)`.trim();
 
 interface Message {
   role: 'user' | 'assistant' | 'system';
@@ -56,9 +57,27 @@ const renderFormattedText = (text: string) => {
   let match;
   let key = 0;
 
+  const renderPlain = (t: string) => {
+    const engRegex = /[a-zA-Z0-9]+(?:\.(?:com|net|org|io|sa|tv))?(?:[/\w-]*)?/g;
+    const plainParts: React.ReactNode[] = [];
+    let pLast = 0;
+    let pMatch;
+    while ((pMatch = engRegex.exec(t)) !== null) {
+      if (pMatch.index > pLast) {
+        plainParts.push(t.slice(pLast, pMatch.index));
+      }
+      plainParts.push(<span key={`e${key++}`} dir="ltr" className="inline-block">{pMatch[0]}</span>);
+      pLast = engRegex.lastIndex;
+    }
+    if (pLast < t.length) {
+      plainParts.push(t.slice(pLast));
+    }
+    return plainParts.length > 0 ? plainParts : t;
+  };
+
   while ((match = regex.exec(text)) !== null) {
     if (match.index > lastIndex) {
-      parts.push(text.slice(lastIndex, match.index));
+      parts.push(renderPlain(text.slice(lastIndex, match.index)));
     }
     if (match[1]?.startsWith('***')) {
       parts.push(<span key={key++} className="font-bold italic text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.15)]">{match[2]}</span>);
@@ -70,7 +89,7 @@ const renderFormattedText = (text: string) => {
     lastIndex = regex.lastIndex;
   }
   if (lastIndex < text.length) {
-    parts.push(text.slice(lastIndex));
+    parts.push(renderPlain(text.slice(lastIndex)));
   }
   return parts.length > 0 ? parts : text;
 };
@@ -524,7 +543,7 @@ export const AIChat: React.FC<AIChatProps> = ({ lang, streamerInfo }) => {
                       <span className="text-[10px] font-bold text-[#FF2D2D]/80 uppercase tracking-wider">iABS AI</span>
                     </div>
                   )}
-                  <span className={`ai-chat ${msg.role === 'user' ? 'text-white user-msg' : 'text-white/90'} whitespace-pre-wrap ${lang === 'ar' ? 'font-arabic' : ''}`}>
+                  <span dir="auto" className={`ai-chat ${msg.role === 'user' ? 'text-white user-msg' : 'text-white/90'} whitespace-pre-wrap ${lang === 'ar' ? 'font-arabic' : ''}`}>
                     {renderFormattedText(msg.content)}
                   </span>
                 </div>
