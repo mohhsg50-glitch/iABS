@@ -9,6 +9,7 @@ import { ChatWidget } from './components/Chat';
 import { StatsSection } from './components/StatsSection';
 import { DiscordWidget, YoutubeWidget } from './components/CommunityWidgets';
 import { StudioSection } from './components/StudioSection';
+import { AIChat } from './components/AIChat';
 
 // --- Constants ---
 const DEFAULT_PROFILE_IMAGE = "/favicon.png";
@@ -1485,6 +1486,9 @@ export default function App() {
                     </div>
                 </footer>
             </div>
+
+            {/* AI Chat */}
+            <AIChat lang={lang} />
 
             {/* Admin Login Modal */}
             {showAdminLogin && !isAdmin && (
