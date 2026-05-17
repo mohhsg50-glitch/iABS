@@ -322,7 +322,7 @@ export const AIChat: React.FC<AIChatProps> = ({ lang, streamerInfo }) => {
       <style>{`
         @keyframes float-glow {
           0%, 100% { transform: translateY(0px) scale(1); box-shadow: 0 0 30px rgba(255,45,45,0.4); }
-          50% { transform: translateY(-8px) scale(1.05); box-shadow: 0 0 50px rgba(255,45,45,0.7); }
+          50% { transform: translateY(-8px) scale(1.05); box-shadow: 0 0 60px rgba(255,45,45,0.7); }
         }
         @keyframes slide-up {
           from { opacity: 0; transform: translateY(20px) scale(0.95); }
@@ -439,18 +439,16 @@ export const AIChat: React.FC<AIChatProps> = ({ lang, streamerInfo }) => {
           )}
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="relative w-16 h-16 rounded-full bg-gradient-to-br from-[#FF2D2D] to-[#CC1111] text-white shadow-2xl flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 border-2 border-white/20"
+            className="relative w-20 h-20 rounded-full bg-gradient-to-br from-[#FF2D2D] to-[#CC1111] shadow-2xl flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95"
             style={{ animation: 'float-glow 3s ease-in-out infinite' }}
           >
             <div className="absolute inset-0 rounded-full bg-[#FF2D2D] opacity-30" style={{ animation: 'pulse-ring 2s ease-out infinite' }}></div>
             {isOpen ? (
-              <svg className="w-7 h-7 relative z-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-7 h-7 relative z-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
               </svg>
             ) : (
-              <svg className="w-7 h-7 relative z-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-              </svg>
+              <img src="/ai-icon.png" alt="AI" className="w-14 h-14 relative z-10 object-contain drop-shadow-[0_0_20px_rgba(0,0,0,0.3)]" />
             )}
           </button>
         </div>
@@ -483,11 +481,9 @@ export const AIChat: React.FC<AIChatProps> = ({ lang, streamerInfo }) => {
         <div className="relative h-16 bg-gradient-to-r from-[#FF2D2D]/20 via-[#FF2D2D]/5 to-transparent border-b border-white/5 flex items-center justify-between px-5 shrink-0 backdrop-blur-sm">
           <div className="absolute inset-0 bg-gradient-to-r from-[#FF2D2D]/10 to-transparent opacity-50"></div>
           <div className="flex items-center gap-3 relative z-10">
-            <div className={`w-10 h-10 rounded-xl bg-gradient-to-br from-[#FF2D2D] to-[#CC1111] flex items-center justify-center shadow-lg shadow-[#FF2D2D]/30 transition-all duration-700 ${isResponding ? 'animate-breathe' : ''} hover:rotate-12`}
+            <div className={`w-12 h-12 flex items-center justify-center transition-all duration-700 ${isResponding ? 'animate-breathe' : ''} hover:rotate-12`}
               style={isResponding ? { animation: 'breathe 1.5s ease-in-out infinite' } : {}}>
-              <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
+              <img src="/ai-icon.png" alt="AI" className="w-12 h-12 object-contain drop-shadow-[0_0_15px_rgba(255,45,45,0.4)]" />
             </div>
             <div>
               <h3 className="text-white font-bold text-sm tracking-wide">iABS AI</h3>
@@ -535,10 +531,8 @@ export const AIChat: React.FC<AIChatProps> = ({ lang, streamerInfo }) => {
                 >
                   {msg.role === 'assistant' && (
                     <div className="flex items-center gap-2 mb-1.5">
-                      <div className="w-5 h-5 rounded-md bg-gradient-to-br from-[#FF2D2D] to-[#CC1111] flex items-center justify-center">
-                        <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                        </svg>
+                      <div className="w-6 h-6 flex items-center justify-center">
+                        <img src="/ai-icon.png" alt="AI" className="w-6 h-6 object-contain" />
                       </div>
                       <span className="text-[10px] font-bold text-[#FF2D2D]/80 uppercase tracking-wider">iABS AI</span>
                     </div>
@@ -565,10 +559,8 @@ export const AIChat: React.FC<AIChatProps> = ({ lang, streamerInfo }) => {
               <div className="flex justify-start" style={{ animation: 'message-pop 0.3s ease-out' }}>
                 <div className="bg-[#0d0d15]/80 border border-white/5 rounded-2xl rounded-bl-md px-4 py-3 backdrop-blur-sm">
                   <div className="flex items-center gap-1.5">
-                    <div className="w-4 h-4 rounded-md bg-gradient-to-br from-[#FF2D2D] to-[#CC1111] flex items-center justify-center">
-                      <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                      </svg>
+                    <div className="w-5 h-5 flex items-center justify-center">
+                      <img src="/ai-icon.png" alt="AI" className="w-5 h-5 object-contain" />
                     </div>
                     <span className="text-[10px] font-bold text-[#FF2D2D]/80 uppercase tracking-wider">iABS AI</span>
                     <div className="flex items-center gap-1 mr-2">
