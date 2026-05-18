@@ -610,13 +610,11 @@ const SupportLinks: React.FC<{ lang: Language }> = ({ lang }) => {
 
                 <div className="flex flex-wrap justify-center gap-2 md:gap-3 max-w-2xl px-2">
                     {[
-                        { amount: '50$', bg: 'from-[#CD7F32]/20 to-[#CD7F32]/5', border: 'border-[#CD7F32]/30', text: 'from-[#CD7F32] to-[#FFE0C2]', glow: 'group-hover:shadow-[0_0_15px_rgba(205,127,50,0.4)]' }, // Bronze
-                        { amount: '100$', bg: 'from-[#C0C0C0]/20 to-[#C0C0C0]/5', border: 'border-[#C0C0C0]/30', text: 'from-[#C0C0C0] to-[#FFFFFF]', glow: 'group-hover:shadow-[0_0_15px_rgba(192,192,192,0.4)]' }, // Silver
-                        { amount: '200$', bg: 'from-[#FFD700]/20 to-[#FFD700]/5', border: 'border-[#FFD700]/30', text: 'from-[#FFD700] to-[#FFF8DC]', glow: 'group-hover:shadow-[0_0_15px_rgba(255,215,0,0.4)]' }, // Gold
-                        { amount: '300$', bg: 'from-[#00FF7F]/20 to-[#00FF7F]/5', border: 'border-[#00FF7F]/30', text: 'from-[#00FF7F] to-[#98FB98]', glow: 'group-hover:shadow-[0_0_15px_rgba(0,255,127,0.4)]' }, // Emerald
-                        { amount: '400$', bg: 'from-[#00BFFF]/20 to-[#00BFFF]/5', border: 'border-[#00BFFF]/30', text: 'from-[#00BFFF] to-[#E0FFFF]', glow: 'group-hover:shadow-[0_0_15px_rgba(0,191,255,0.4)]' }, // Diamond
-                        { amount: '500$', bg: 'from-[#8A2BE2]/20 to-[#8A2BE2]/5', border: 'border-[#8A2BE2]/30', text: 'from-[#8A2BE2] to-[#E6E6FA]', glow: 'group-hover:shadow-[0_0_15px_rgba(138,43,226,0.4)]' }, // Amethyst
-                        { amount: '1000$', bg: 'from-[#FF2D2D]/30 to-[#FF2D2D]/10', border: 'border-[#FF2D2D]/50', text: 'from-[#FF2D2D] to-[#FFC0CB]', glow: 'group-hover:shadow-[0_0_20px_rgba(255,45,45,0.6)]' }, // Ruby
+                        { amount: '15$', bg: 'from-[#CD7F32]/20 to-[#CD7F32]/5', border: 'border-[#CD7F32]/30', text: 'from-[#CD7F32] to-[#FFE0C2]', glow: 'group-hover:shadow-[0_0_15px_rgba(205,127,50,0.4)]' }, // Bronze
+                        { amount: '99$', bg: 'from-[#C0C0C0]/20 to-[#C0C0C0]/5', border: 'border-[#C0C0C0]/30', text: 'from-[#C0C0C0] to-[#FFFFFF]', glow: 'group-hover:shadow-[0_0_15px_rgba(192,192,192,0.4)]' }, // Silver
+                        { amount: '300$', bg: 'from-[#FFD700]/20 to-[#FFD700]/5', border: 'border-[#FFD700]/30', text: 'from-[#FFD700] to-[#FFF8DC]', glow: 'group-hover:shadow-[0_0_15px_rgba(255,215,0,0.4)]' }, // Gold
+                        { amount: '505$', bg: 'from-[#00BFFF]/20 to-[#00BFFF]/5', border: 'border-[#00BFFF]/30', text: 'from-[#00BFFF] to-[#E0FFFF]', glow: 'group-hover:shadow-[0_0_15px_rgba(0,191,255,0.4)]' }, // Diamond
+                        { amount: '999$', bg: 'from-[#FF2D2D]/30 to-[#FF2D2D]/10', border: 'border-[#FF2D2D]/50', text: 'from-[#FF2D2D] to-[#FFC0CB]', glow: 'group-hover:shadow-[0_0_20px_rgba(255,45,45,0.6)]' }, // Ruby
                     ].map((item, idx) => (
                         <div key={idx} className="relative group cursor-default">
                             <div className={`absolute inset-0 rounded-xl bg-gradient-to-br ${item.bg} blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-500`}></div>
