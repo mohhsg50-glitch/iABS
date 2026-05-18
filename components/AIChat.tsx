@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Language } from '../types';
+import { supabase } from '../supabaseClient';
 
 interface AIChatProps {
   lang: Language;
@@ -15,28 +16,42 @@ const API_KEYS = [
 const SYSTEM_PROMPT = `أنت مساعد iABS الرسمي، تتحدث باللهجة السعودية دائمًا. اسمك "iABS AI".
 
 معلومات كاملة عن iABS (محمد القحطاني):
-- الاسم الكامل: محمد القحطاني
+- الاسم الكامل: محمد القحطاني او ابو سعد 
 - العمر: 24 سنة (مواليد 2002)
 - الجنسية: سعودي من سراة عبيدة، من سكان أبها
+- طوله: 180 سم - وزنه: 95 كجم
 - المنصة الأساسية: Kick - iABS
-- المتابعين: 124K على Kick، 40K يوتيوب، 43K تيك توك، 57K تويتر
-- طوله: 176 سم - وزنه: 80 كجم
+- المتابعين: 124K على Kick، 40K يوتيوب، 43K تيك توك، 57K تويتر، 50K سناب شات
 - أخوه: iMSA3Dq ستريمر في Kick
-- محتواه: GTA V / FiveM، Just Chatting، ألعاب تنويعية
+- محتواه: GTA V / FiveM (MT RP)، Just Chatting، ألعاب تنويعية
 - أسلوبه: عفوي، تفاعلي، فكاهي، يعتمد على الكاريزما والضحك
 - كلانه: LevelOne
-- المودات: inormal, yousef1098, ireim, shaddoh, sipdai, maryamqa, imiro97, iali5, lena81l, a7medo, wjdan3, fotaami, 2inoura, awash7, rton, janaxx, mohmd505, raghada1
+-  العمال والمودات: inormal, yousef1098, ireim, shaddoh, sipdai, maryamqa, imiro97, iali5, lena81l, a7medo, wjdan3, fotaami, 2inoura, awash7, rton, janaxx, mohmd505, raghada1
 - أشهر كلماته: "ملك القبول والاستمرارية" 👑، هاشتاق #StayOne
 - شخصيته: واثق، حماسي، يحب التفاعل مع الشات، بثوثه طويلة وسابثونات
 - معروف بـ: الكاريزما العالية، الأجواء العفوية، المحتوى المتنوع
 - ليش الناس تتابعه: شخصيته قوية، يعرف يسوي "جو" بالبث، مجتمع متفاعل، استمرارية يومية
+
+شخصيات iABS في MT RP (GTA):
+- **محيا القحطاني** (عسكري)
+- **كمنجه القحطاني** (عسكري سابق)
+- **فارتولو** (مواطن)
+- **حميد** (مواطن-عسكري)
+- **اسحاق** (عسكري)
+- **ابا الحارث** (CIA)
+
+شقة اليرموك:
+- شقة كل الناس غثت بسببها باليرموك
+- مساحتها 10*10 بس
+- الفرش من عز أو ابو سعود
 
 تعليمات الرد:
 - تحدث باللهجة السعودية دائمًا (مثل: وشلونك، تمام، وش فيه، اقصد، الخ)
 - أجب بحماس وعفوية، كانك صاحبي
 - اختصر بالردود عشان التوكنز، ما تطول
 - جاوب بمعلومة دقيقة ومختصرة
-- إذا ما تعرف شيء، قول "والله مدري بالضبط بس أقدر أساعدك بشي ثاني"
+- إذا ما تعرف شيء، قول "ترا داخل موقع حسابات شتبي"
+- إذا سألك عن أسماء المتابعين أو المتصدرين أو التفاعل، استخدم البيانات اللي تجيك من بوتريكس (Botrix) عشان تجاوب
 - استخدم كلمات سعودية: وش، اقصد، هذاك، كذا، الحين، الخ
 - استخدم تنسيق النصوص لتجميل الردود:
   • **كلمة** للنص العريض (مهم)
@@ -66,7 +81,7 @@ const SYSTEM_PROMPT = `أنت مساعد iABS الرسمي، تتحدث بالل
 [social:Instagram:21K:https://www.instagram.com/absq/]
 [social:TikTok:43K:https://www.tiktok.com/@iabsq]
 [social:YouTube:40K:https://www.youtube.com/@ABS11]
-[social:Snapchat:1.2M:https://www.snapchat.com/@iabsq]
+[social:Snapchat:50K:https://www.snapchat.com/@iabsq]
 [social:Discord:9K:https://discord.com/invite/64aggJ9yRA]
 [social:WhatsApp:9K:https://www.whatsapp.com/channel/0029VadbqYx5Ui2eInkr7v2E]
 - عندما يطلب أحد حسابات iABS، اعرض الرابط بهذه الصيغة عشان يظهر كزر جميل
@@ -341,10 +356,26 @@ export const AIChat: React.FC<AIChatProps> = ({ lang, streamerInfo }) => {
     setShowQuickActions(false);
 
     try {
+      let botrixData = null;
+      const keywords = ['اسم', 'متابع', 'مشارك', 'متداول', 'بوتريكس', 'botrix', 'ليدر', 'leaderboard', 'متصدر', 'ترتيب', 'تفاعل', 'قائمة', 'اشخاص', 'الناس'];
+      const isLeaderboardQuery = keywords.some(k => text.includes(k));
+      if (isLeaderboardQuery) {
+        try {
+          const botrixRes = await fetch('/api/kick?endpoint=' + encodeURIComponent('https://botrix.live/api/public/leaderboard?platform=kick&user=iabs'));
+          if (botrixRes.ok) {
+            botrixData = await botrixRes.json();
+          }
+        } catch {}
+      }
+
+      const systemContent = botrixData
+        ? SYSTEM_PROMPT + `\n\nهذي بيانات المتصدرين من بوتريكس حالياً (اطلب المستخدم قائمة المتابعين/المتصدرين):\n${JSON.stringify(botrixData.slice(0, 20))}\n\nاستخدم هالبيانات عشان ترد على المستخدم واكتب له أسماء المتصدرين بمعلوماتهم (المستوى، وقت المشاهدة، XP، النقاط).`
+        : SYSTEM_PROMPT;
+
       const body = {
         model: 'deepseek-chat',
         messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
+          { role: 'system', content: systemContent },
           ...newMessages.map(m => ({ role: m.role, content: m.content })),
         ],
         stream: true,
@@ -392,6 +423,14 @@ export const AIChat: React.FC<AIChatProps> = ({ lang, streamerInfo }) => {
           } catch {}
         }
       }
+
+      try {
+        await supabase.from('ai_chat_logs').insert({
+          user_message: text,
+          ai_response: assistantContent,
+          created_at: new Date().toISOString(),
+        });
+      } catch {}
     } catch (err) {
       console.error('AI Chat Error:', err);
       setIsWaiting(false);

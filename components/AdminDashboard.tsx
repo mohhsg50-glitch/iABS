@@ -50,6 +50,9 @@ export const AdminDashboard = ({ supabase, visitorCount, activePoll, setActivePo
     // Chart Data
     const [chartData, setChartData] = useState<any[]>([]);
 
+    // AI Chat Logs
+    const [aiLogs, setAiLogs] = useState<any[]>([]);
+
     const loadData = async () => {
         try {
             const { data: ann, error: err1 } = await supabase.from('announcements').select('*').eq('id', 1).single();
@@ -107,6 +110,10 @@ export const AdminDashboard = ({ supabase, visitorCount, activePoll, setActivePo
             if (pend) setStudioPending(pend);
             const { data: appr } = await supabase.from('studio_submissions').select('*').eq('status', 'approved').order('id', { ascending: false }).limit(80);
             if (appr) setStudioApproved(appr);
+
+            // AI Chat Logs
+            const { data: ai } = await supabase.from('ai_chat_logs').select('*').order('id', { ascending: false }).limit(100);
+            if (ai) setAiLogs(ai);
 
         } catch (err) {
             console.error("Admin Load Error", err);
@@ -255,7 +262,8 @@ export const AdminDashboard = ({ supabase, visitorCount, activePoll, setActivePo
         // New powerful sections (cartoon style)
         { id: 'admins', name: 'إدارة الأدمن 🛡️', icon: 'M12 1l3 5 6 .5-4.5 4 1.5 6-6-3-6 3 1.5-6-4.5-4 6-.5 3-5z' },
         { id: 'audit', name: 'سجل النشاط 🧾', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2' },
-        { id: 'media', name: 'مكتبة الميديا 🖼️', icon: 'M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z' }
+        { id: 'media', name: 'مكتبة الميديا 🖼️', icon: 'M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z' },
+        { id: 'ai_logs', name: 'سجل AI 🤖', icon: 'M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z' }
     ];
 
     return (
@@ -948,68 +956,103 @@ export const AdminDashboard = ({ supabase, visitorCount, activePoll, setActivePo
                         <div className="animate-fade-in-up space-y-8">
                             <h2 className="text-2xl md:text-3xl lg:text-4xl font-black text-white mb-4 md:mb-6 tracking-tight">مراجعة الاستديو ✅</h2>
 
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                <div className="bg-[#111] p-5 md:p-7 lg:p-10 rounded-[40px] border border-white/10">
-                                    <div className="flex items-center justify-between mb-5 md:mb-6">
-                                        <h3 className="text-xl md:text-2xl font-black text-white">بانتظار الموافقة</h3>
-                                        <span className="text-[11px] font-black tracking-[0.35em] text-white/40 uppercase">{studioPending.length} PENDING</span>
-                                    </div>
-                                    <div className="space-y-3">
-                                        {studioPending.map((s: any) => (
-                                            <div key={s.id} className="bg-black/40 border border-white/10 rounded-[24px] p-4 flex flex-col gap-3">
-                                                <div className="flex items-start justify-between gap-3">
-                                                    <div className="min-w-0">
-                                                        <div className="text-white font-black truncate">{s.title}</div>
-                                                        <div className="text-white/40 text-xs mt-1">#{s.id} • {new Date(s.created_at).toLocaleString()}</div>
-                                                    </div>
-                                                    <div className="flex gap-2 shrink-0">
-                                                        <button onClick={() => approveStudio(s.id)} className="px-4 py-2 rounded-[16px] bg-white text-black font-black border-2 border-black/30 shadow-[0_8px_0_rgba(0,0,0,0.35)] active:translate-y-1 active:shadow-[0_3px_0_rgba(0,0,0,0.35)] transition">موافقة</button>
-                                                        <button onClick={() => rejectStudio(s.id)} className="px-4 py-2 rounded-[16px] bg-red-500/10 text-red-300 font-black border-2 border-red-500/20 hover:bg-red-500/15 transition">رفض</button>
-                                                    </div>
+                            {/* Pending */}
+                            <div>
+                                <h3 className="text-lg font-black text-yellow-400 mb-4">قيد المراجعة ({studioPending.length})</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {studioPending.map((sub: any) => (
+                                        <div key={sub.id} className="bg-[#111] border border-yellow-500/20 rounded-[24px] p-5 space-y-4 hover:border-yellow-500/40 transition-all">
+                                            <div className="flex items-center justify-between gap-3">
+                                                <div>
+                                                    <span className="text-white font-black">{sub.user_name || sub.username || 'مجهول'}</span>
+                                                    <span className="text-white/30 block text-sm mt-1">{sub.email || '—'}</span>
                                                 </div>
-                                                <a href={s.media_url} target="_blank" rel="noreferrer" className="text-blue-400 hover:text-blue-300 font-bold text-sm truncate" dir="ltr">
-                                                    {s.media_url}
-                                                </a>
-                                                <div className="flex flex-wrap gap-2">
-                                                    <span className="text-[10px] font-black tracking-[0.25em] uppercase px-3 py-1 rounded-full bg-white/5 border border-white/10 text-white/70">{s.media_type}</span>
-                                                    <span className="text-[10px] font-black tracking-[0.25em] uppercase px-3 py-1 rounded-full bg-white/5 border border-white/10 text-white/70">{s.source}</span>
-                                                    {s.width && s.height && (
-                                                        <span className="text-[10px] font-black tracking-[0.25em] uppercase px-3 py-1 rounded-full bg-white/5 border border-white/10 text-white/70">{s.width}×{s.height}</span>
-                                                    )}
-                                                </div>
+                                                <span className="text-[10px] font-black px-3 py-1 rounded-full bg-yellow-500/10 text-yellow-400 border border-yellow-500/30">Pending</span>
                                             </div>
-                                        ))}
-                                        {studioPending.length === 0 && <div className="text-center py-8 text-white/30 font-bold">لا يوجد محتوى بانتظار المراجعة.</div>}
-                                    </div>
+                                            {sub.details && <p className="text-white/70 text-sm leading-relaxed">{sub.details}</p>}
+                                            <div className="flex gap-2">
+                                                <button onClick={() => approveStudio(sub.id)} className="flex-1 py-2 rounded-xl bg-gradient-to-r from-green-600 to-green-700 text-white font-black border-2 border-green-400/30 hover:shadow-[0_0_20px_rgba(34,197,94,0.3)] transition-all">✅ قبول</button>
+                                                <button onClick={() => deleteStudio(sub.id)} className="py-2 px-5 rounded-xl bg-red-600/20 text-red-400 font-black border-2 border-red-500/30 hover:bg-red-600/30 transition-all">❌ رفض</button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                    {studioPending.length === 0 && <div className="col-span-2 text-center py-10 text-white/30 font-bold">مافي طلبات معلقة</div>}
                                 </div>
+                            </div>
 
-                                <div className="bg-[#111] p-5 md:p-7 lg:p-10 rounded-[40px] border border-white/10">
-                                    <div className="flex items-center justify-between mb-5 md:mb-6">
-                                        <h3 className="text-xl md:text-2xl font-black text-white">المعتمد (آخر 80)</h3>
-                                        <span className="text-[11px] font-black tracking-[0.35em] text-white/40 uppercase">{studioApproved.length} LIVE</span>
-                                    </div>
-                                    <div className="space-y-3">
-                                        {studioApproved.map((s: any) => (
-                                            <div key={s.id} className="bg-black/40 border border-white/10 rounded-[24px] p-4 flex items-start justify-between gap-3">
-                                                <div className="min-w-0">
-                                                    <div className="text-white font-black truncate">{s.title}</div>
-                                                    <a href={s.media_url} target="_blank" rel="noreferrer" className="text-blue-400 hover:text-blue-300 font-bold text-sm truncate block mt-1" dir="ltr">
-                                                        {s.media_url}
-                                                    </a>
-                                                    <div className="text-white/30 text-xs mt-2">{new Date(s.created_at).toLocaleString()}</div>
+                            {/* Approved */}
+                            <div>
+                                <h3 className="text-lg font-black text-green-400 mb-4">تمت الموافقة ({studioApproved.length})</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {studioApproved.map((sub: any) => (
+                                        <div key={sub.id} className="bg-[#111] border border-green-500/20 rounded-[24px] p-5 space-y-4 hover:border-green-500/40 transition-all">
+                                            <div className="flex items-center justify-between gap-3">
+                                                <div>
+                                                    <span className="text-white font-black">{sub.user_name || sub.username || 'مجهول'}</span>
+                                                    <span className="text-white/30 block text-sm mt-1">{sub.email || '—'}</span>
                                                 </div>
-                                                <button onClick={() => deleteStudio(s.id)} className="w-12 h-12 bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white rounded-[16px] transition-all flex items-center justify-center shrink-0 border border-red-500/20">
-                                                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                                                </button>
+                                                <span className="text-[10px] font-black px-3 py-1 rounded-full bg-green-500/10 text-green-400 border border-green-500/30">Approved ✓</span>
                                             </div>
-                                        ))}
-                                        {studioApproved.length === 0 && <div className="text-center py-8 text-white/30 font-bold">لا يوجد محتوى معتمد.</div>}
-                                    </div>
+                                            {sub.details && <p className="text-white/70 text-sm leading-relaxed">{sub.details}</p>}
+                                            <button onClick={() => deleteStudio(sub.id)} className="py-2 px-5 rounded-xl bg-red-600/20 text-red-400 font-black border-2 border-red-500/30 hover:bg-red-600/30 transition-all">🗑️ حذف</button>
+                                        </div>
+                                    ))}
+                                    {studioApproved.length === 0 && <div className="col-span-2 text-center py-10 text-white/30 font-bold">مافي موافقات بعد</div>}
                                 </div>
                             </div>
                         </div>
                     )}
 
+                    {/* Tab: AI Chat Logs */}
+                    {activeTab === 'ai_logs' && (
+                        <div className="animate-fade-in-up space-y-8">
+                            <div className="flex items-end justify-between gap-4">
+                                <div>
+                                    <h2 className="text-2xl md:text-3xl lg:text-4xl font-black text-white tracking-tight">سجل محادثات AI 🤖</h2>
+                                    <p className="text-white/50 mt-2">جميع أسئلة الزوار وردود الذكاء الاصطناعي.</p>
+                                </div>
+                                <button onClick={loadData} className="px-5 py-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold transition-colors">تحديث</button>
+                            </div>
+
+                            <div className="space-y-3">
+                                {aiLogs.map((log: any) => (
+                                    <div key={log.id} className="bg-[#111] border border-white/5 rounded-[24px] p-5 md:p-6 hover:border-[#FF2D2D]/20 transition-all duration-300">
+                                        <div className="flex items-center gap-2 mb-3">
+                                            <span className="text-[10px] font-black tracking-[0.2em] uppercase px-2.5 py-1 rounded-full bg-[#FF2D2D]/10 text-[#FF2D2D] border border-[#FF2D2D]/20">
+                                                {log.created_at ? new Date(log.created_at).toLocaleString('ar-SA') : '—'}
+                                            </span>
+                                        </div>
+                                        <div className="space-y-3">
+                                            <div className="flex gap-3">
+                                                <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center shrink-0 border border-blue-500/30">
+                                                    <svg className="w-4 h-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+                                                </div>
+                                                <div className="flex-1 bg-white/[0.03] rounded-xl p-3 border border-white/[0.06]">
+                                                    <p className="text-white/90 text-sm leading-relaxed">{log.user_message}</p>
+                                                </div>
+                                            </div>
+                                            <div className="flex gap-3">
+                                                <div className="w-8 h-8 rounded-full bg-[#FF2D2D]/20 flex items-center justify-center shrink-0 border border-[#FF2D2D]/30">
+                                                    <svg className="w-4 h-4 text-[#FF2D2D]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                                                </div>
+                                                <div className="flex-1 bg-[#FF2D2D]/[0.03] rounded-xl p-3 border border-[#FF2D2D]/[0.06]">
+                                                    <p className="text-white/80 text-sm leading-relaxed">{log.ai_response}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                                {aiLogs.length === 0 && (
+                                    <div className="text-center py-16 text-white/30 font-bold">
+                                        <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-4 border border-white/10">
+                                            <svg className="w-8 h-8 text-white/20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>
+                                        </div>
+                                        لا يوجد سجلات محادثات بعد.
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
                     </div>
                 </div>
             </div>
